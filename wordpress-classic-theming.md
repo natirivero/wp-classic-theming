@@ -150,14 +150,6 @@ The central configuration for a hybrid theme. For more context check ./reference
 - **Responsive sizes with `clamp()`**: When the design specifies separate mobile (min) and desktop (max) font sizes for the same token or element, combine them in `theme.json` with `clamp(min, preferred, max)` — mobile value as the minimum, desktop as the maximum. Convert px to rem (÷ 16). Example: h1 at 32px mobile / 56px desktop → `"size": "clamp(2rem, 4vw + 1rem, 3.5rem)"`. Use a single fixed size when the design gives only one breakpoint value.
 - **Line height**: Body text: 1.5–1.65. Headings: 1.1–1.3. Never below 1.0. Pull values from the design file when specified.
 
-## Cover Block Pitfalls
-
-Applies to `wp:cover` in block patterns and post content. For the hero in `front-page.php`, use plain CSS (`min-height: 60vh; display: flex; align-items: center;`) — same outcome, no block.
-
-- **Use `60vh`** as the default cover block height — enough visual presence without wasted space. `minHeight` only accepts a number + unit, not `clamp()`.
-- Keep top padding modest (~5rem) — the cover's flexbox centering handles vertical positioning.
-- Decorative badges (`— Eyebrow —`) must use `display: flex; justify-content: center` — never `inline-flex` (which left-aligns inside cover blocks).
-
 ## PHP Templates
 
 PHP templates render every front-end response. WordPress chooses one per request via the template hierarchy.
