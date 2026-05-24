@@ -145,8 +145,10 @@ The central configuration for a hybrid theme. For more context check ./reference
 
 ## Typography
 
-- **Font size scale**: Body: 1rem. Headings: scale modestly (h1 ≤ 2.5–3rem). Use `clamp()` for responsive display text, but cap at ~3.5rem max. Avoid sizes above 4rem. A good 6-step scale: 0.875rem / 1rem / 1.25rem / 1.75rem / 2.25rem / clamp(2.5rem, 4vw, 3.5rem).
-- **Line height**: Body text: 1.5–1.65. Headings: 1.1–1.3. Never below 1.0.
+- **Design file first**: When a design file is available (Figma, Pencil, approved HTML mockups, or `design-tokens.json` from the design package), use its font families, weights, and sizes as the source of truth. Map them into `theme.json` `fontFamilies` and `fontSizes` — they override the generic defaults below.
+- **Font size scale** (fallback when no design file): Body: 1rem. Headings: scale modestly (h1 ≤ 2.5–3rem). Cap display text at ~3.5rem max. Avoid sizes above 4rem. A good 6-step scale: 0.875rem / 1rem / 1.25rem / 1.75rem / 2.25rem / clamp(2.5rem, 4vw, 3.5rem).
+- **Responsive sizes with `clamp()`**: When the design specifies separate mobile (min) and desktop (max) font sizes for the same token or element, combine them in `theme.json` with `clamp(min, preferred, max)` — mobile value as the minimum, desktop as the maximum. Convert px to rem (÷ 16). Example: h1 at 32px mobile / 56px desktop → `"size": "clamp(2rem, 4vw + 1rem, 3.5rem)"`. Use a single fixed size when the design gives only one breakpoint value.
+- **Line height**: Body text: 1.5–1.65. Headings: 1.1–1.3. Never below 1.0. Pull values from the design file when specified.
 
 ## Cover Block Pitfalls
 
