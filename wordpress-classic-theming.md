@@ -726,7 +726,7 @@ Use CSS grid directly:
 .feature-card .cta-bottom { margin-top: auto; }
 ```
 
-## Landing Page Composition
+## Landing Page Composition (When no design file is available)
 
 Think like a landing page designer, not a template assembler. Every section should be a visually distinct, full-width band that creates rhythm and visual impact as the user scrolls.
 
@@ -757,82 +757,6 @@ Apply to both `front-page.php` / `page-{slug}.php` (hand-written HTML) and block
 - Background colors via CSS classes that reference `var(--wp--preset--color--{slug})`.
 - CTAs: `<a class="wp-element-button" href="<?php echo esc_url( ... ); ?>">`.
 - Animation classes apply directly on the HTML element.
-
-### Syntax: block patterns / post content
-
-Every major section must be `alignfull` — edge-to-edge. The wrapper fills the viewport; inner content is constrained:
-
-```html
-<!-- wp:group {"align":"full","backgroundColor":"...","layout":{"type":"constrained"}} -->
-```
-
-**Never use bare `{"layout":{"type":"constrained"}}` without `"align":"full"`** for landing-page sections — the page renders at `contentSize` (800px) and looks narrow. **Columns**: always set `"align":"wide"` on `wp:columns` unless instructed otherwise.
-
-### Common Block Pattern Mistakes
-
-Apply to patterns and post content (NOT to PHP templates, which are hand-written HTML).
-
-**1. Complex layout dumped into an HTML block**
-
-WRONG:
-
-```html
-<!-- wp:html -->
-<div class="features-grid">
-  <div class="feature"><h3>Fast</h3><p>Lightning-quick.</p></div>
-  <div class="feature"><h3>Secure</h3><p>Enterprise-grade.</p></div>
-</div>
-<!-- /wp:html -->
-```
-
-RIGHT — each element a selectable, editable core block:
-
-```html
-<!-- wp:columns {"align":"wide","className":"features-grid"} -->
-<div class="wp-block-columns alignwide features-grid">
-  <!-- wp:column --><div class="wp-block-column">
-    <!-- wp:heading {"level":3} --><h3 class="wp-block-heading">Fast</h3><!-- /wp:heading -->
-    <!-- wp:paragraph --><p>Lightning-quick.</p><!-- /wp:paragraph -->
-  </div><!-- /wp:column -->
-  <!-- wp:column --><div class="wp-block-column">
-    <!-- wp:heading {"level":3} --><h3 class="wp-block-heading">Secure</h3><!-- /wp:heading -->
-    <!-- wp:paragraph --><p>Enterprise-grade.</p><!-- /wp:paragraph -->
-  </div><!-- /wp:column -->
-</div>
-<!-- /wp:columns -->
-```
-
-**2. Entire styled section in an HTML block**
-
-WRONG:
-
-```html
-<!-- wp:html -->
-<section class="cta-band" style="background:#1a1a2e;padding:4rem 2rem;text-align:center;">
-  <h2 style="color:#fff;">Ready?</h2>
-  <a href="#" class="cta-button">Sign Up</a>
-</section>
-<!-- /wp:html -->
-```
-
-RIGHT — use `wp:group` with `className`, style `.cta-band` in `style.css`:
-
-```html
-<!-- wp:group {"className":"cta-band","align":"full","backgroundColor":"primary","textColor":"light","layout":{"type":"constrained"}} -->
-<div class="wp-block-group alignfull cta-band has-primary-background-color has-light-color has-text-color has-background">
-  <!-- wp:heading {"textAlign":"center"} --><h2 class="wp-block-heading has-text-align-center">Ready?</h2><!-- /wp:heading -->
-  <!-- wp:buttons {"layout":{"type":"flex","justifyContent":"center"}} -->
-  <div class="wp-block-buttons">
-    <!-- wp:button --><div class="wp-block-button"><a class="wp-block-button__link wp-element-button">Sign Up</a></div><!-- /wp:button -->
-  </div>
-  <!-- /wp:buttons -->
-</div>
-<!-- /wp:group -->
-```
-
-**3. Decorative HTML comments**
-
-WRONG: `<!-- Hero Section -->` / `<!-- Features Section -->` between blocks. RIGHT: remove them entirely.
 
 ## Image Handling
 
