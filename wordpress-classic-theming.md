@@ -435,31 +435,6 @@ get_template_part( 'template-parts/content/content', get_post_type() );
 
 Resolves to `template-parts/content/content-post.php` (with fallback `content.php`) for the `post` post type.
 
-## Block Patterns
-
-Patterns are PHP files in `/patterns/`, auto-discovered by WP 6.0+. Each starts with a header docblock:
-
-```php
-<?php
-/**
- * Title: Hero Section          (required)
- * Slug: theme-slug/hero        (required; must be namespaced)
- * Categories: featured         (optional, comma-separated)
- * Keywords: hero, intro        (optional)
- * Block Types: core/post-content   (optional)
- * Post Types: page, post       (optional)
- * Inserter: true               (optional; false = registered but hidden)
- * Description: One-line description.
- * Viewport Width: 1400         (optional preview width)
- */
-?>
-<!-- wp:group {"backgroundColor":"primary","textColor":"light","layout":{"type":"constrained"}} -->
-...
-<!-- /wp:group -->
-```
-
-Missing `Title:` or `Slug:` = silently skipped. **Do NOT** loop through `/patterns/` and call `register_block_pattern()` manually — auto-discovery handles registration. `functions.php` only needs to register a custom pattern category.
-
 ## functions.php
 
 `functions.php` declares theme supports, registers menus/sidebars/pattern categories, enqueues assets, and outputs the scroll-observer script.
