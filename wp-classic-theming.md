@@ -4,11 +4,11 @@
 
 description: WordPress Hybrid theme architecture. Use when generating theme.json, PHP templates, template parts, patterns, and functions.php for WordPress classic (hybrid) themes.
 
-# WordPress Classic (Hybrid) Theming Skill (Test)
+# WordPress Classic (Hybrid) Theming Skill
 
 Comprehensive knowledge for building WordPress **hybrid** themes — PHP templates as the source of truth, `theme.json` as the design system, block patterns and the post editor for editorial content. The repo is the source of truth; the database manages post content only.
 
-When a design file is available, read this skill first, then read and follow `theme-creation-flow.md` for execution order and approval checkpoints. The flow file controls sequencing only; all architecture, WordPress, theme.json, CSS, typography, component, and template rules in this skill still apply.
+When a design file is available: Read this skill first, then read and follow `theme-creation-flow.md` for execution order and approval checkpoints. The flow file controls sequencing only; all architecture, WordPress, theme.json, CSS, typography, component, and template rules in this skill still apply.
 
 ## Absolute Rules
 
