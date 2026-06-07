@@ -8,53 +8,63 @@ description: WordPress Hybrid theme architecture. Use when generating theme.json
 
 Comprehensive knowledge for building WordPress **hybrid** themes — PHP templates as the source of truth, `theme.json` as the design system, block patterns and the post editor for editorial content. The repo is the source of truth; the database manages post content only.
 
+Read this skill first, then read and follow `theme-creation-flow.md` for execution order and approval checkpoints. The flow file controls sequencing only; all architecture, WordPress, theme.json, CSS, typography, component, and template rules in this skill still apply.
+
 ## Absolute Rules
 
 - **NO DUPLICATED VARIABLES**: Do not redeclare in `style.css` any color, spacing, or typography value already defined in `theme.json`. Use the matching `--wp--preset--`* CSS custom property instead.
 - **NO HARD-CODED FONT SIZES**: Do not set `font-size` in `style.css` or inline in HTML. Use `--wp--preset--font-size--`* variables.
 - **NO HARD-CODED SPACING**: Do not use literal `padding` or `margin` values. Use `--wp--preset--spacing--`* variables.
 - **NO MIXED OUTPUT**: PHP templates (`front-page.php`, `index.php`, `single.php`, `page.php`, `header.php`, `footer.php`, etc.) are plain HTML/PHP. Never insert `<!-- wp:* -->` comments into PHP templates. Block markup lives only in `patterns/*.php` and in post content saved through the editor.
-- **LOAD GOOGLE FONTS LOCALLY, NOT FROM CDN**: Download woff2 files into `assets/fonts/`, declare each family with `fontFace` in `theme.json` (WordPress emits `@font-face` on the front end and in the editor), and never enqueue Google Fonts CSS from `fonts.googleapis.com` or `fonts.gstatic.com`. See "Local Fonts via theme.json".
+- **LOAD GOOGLE FONTS LOCALLY, NOT FROM CDN**: Download .`woff2` files into `assets/fonts/`, declare each family with `fontFace` in `theme.json` (WordPress emits `@font-face` on the front end and in the editor), never use `.ttf`, `.otf`, `fonts.googleapis.com`, or `fonts.gstatic.com`.
 - **PAGE CONTENT LIVES IN PHP TEMPLATES, NOT IN THE DATABASE**: Static pages (Home, About, Services, Contact, etc.) may exist in the database — the matching PHP template always wins for the route. Write each page's layout and copy directly in its template — `front-page.php` for the homepage, `page-{slug}.php` (e.g., `page-about.php`, `page-services.php`, `page-contact.php`) for every other static page — never source a page body from `the_content()` against the main query. Sub-queries (`new WP_Query()`) for self-contained strips are fine.
 
 ## Theme Architecture
 
-### Directory Structure
+Prefer this structure for component-first hybrid themes:
 
-```
+```text
 theme-slug/
-├── style.css              # REQUIRED. Theme metadata header + custom CSS.
-├── theme.json             # REQUIRED. Design system; emits --wp--preset--* CSS vars on the front end.
-├── functions.php          # REQUIRED. Theme supports, enqueues, menu/sidebar/pattern-category registration.
-├── index.php              # REQUIRED. Ultimate fallback template; runs the loop.
-├── header.php             # REQUIRED. Loaded by get_header().
-├── footer.php             # REQUIRED. Loaded by get_footer().
-├── front-page.php         # REQUIRED. Code-first HTML landing page template.
-├── home.php               # REQUIRED. Blog posts index.
-├── page.php               # REQUIRED. Generic fallback for pages without a per-slug template.
-├── page-{slug}.php        # PREFERRED per static page (page-about.php, page-services.php, page-contact.php) — code-first layout, may include dynamic loops.
-├── single.php             # REQUIRED. Single post template.
-├── archive.php            # REQUIRED. Category/tag/date archives.
-├── search.php             # REQUIRED. Search results page.
-├── 404.php                # REQUIRED. Custom 404.
-├── comments.php           # INCLUDED. Minimal skeleton; respects discussion settings.
-├── sidebar.php            # INCLUDED. Opt-in via is_active_sidebar() guard.
-├── searchform.php         # OPTIONAL. Override of get_search_form() output.
-├── screenshot.png         # RECOMMENDED. 1200×900 PNG shown in Appearance → Themes.
-├── template-parts/
-│   ├── header/site-branding.php
-│   ├── content/content.php
-│   ├── content/content-page.php
-│   ├── content/content-single.php
-│   ├── content/content-none.php
-│   └── footer/site-info.php
-├── patterns/              # Auto-discovered by WP 6.0+ (no PHP registration needed).
-│   ├── hero.php
-│   ├── features.php
-│   └── cta.php
-└── assets/                # Referenced via get_theme_file_uri().
-    ├── images/
-    └── js/
+|-- style.css
+|-- theme.json
+|-- functions.php
+|-- index.php
+|-- header.php
+|-- footer.php
+|-- front-page.php
+|-- home.php
+|-- page.php
+|-- page-{slug}.php
+|-- single.php
+|-- archive.php
+|-- search.php
+|-- 404.php
+|-- comments.php
+|-- searchform.php
+|-- component-library.php
+|-- layout-library.php
+|-- components/
+|   |-- buttons.php
+|   |-- cards.php
+|   |-- navigation.php
+|   |-- forms.php
+|   `-- content-card.php
+|-- layouts/
+|   |-- hero.php
+|   |-- service-grid.php
+|   |-- cta.php
+|   `-- blog-preview.php
+|-- template-parts/
+|   |-- header/site-branding.php
+|   |-- content/content.php
+|   |-- content/content-page.php
+|   |-- content/content-single.php
+|   |-- content/content-none.php
+|   `-- footer/site-info.php
+`-- assets/
+    |-- fonts/
+    |-- images/
+    `-- js/
 ```
 
 **Negative rules:**
@@ -125,9 +135,59 @@ The central configuration for a hybrid theme. For more context check ./reference
     "color": { /* background + text from palette */ },
     "typography": { /* body font family, medium size, line-height 1.5-1.65 */ },
     "elements": {
-      "heading": { /* heading font family, line-height 1.1-1.3 */ },
+      "heading": { /* shared heading defaults only */ },
+      "h1": { /* heading-1 size/weight/line-height */ },
+      "h2": { /* heading-2 size/weight/line-height */ },
+      "h3": { /* heading-3 size/weight/line-height */ },
+      "h4": { /* heading-4 size/weight/line-height */ },
+      "h5": { /* heading-5 size/weight/line-height */ },
+      "h6": { /* heading-6 size/weight/line-height */ },
       "link": { /* accent color */ },
       "button": { /* accent background, light text, border-radius */ }
+    }
+  }
+}
+```
+
+### Heading Elements
+
+Define a shared `heading` baseline, then isolate `h1` through `h6`. Do not rely on grouped heading cascades for individual heading sizes or weights.
+
+```json
+{
+  "styles": {
+    "elements": {
+      "heading": {
+        "typography": {
+          "fontFamily": "var(--wp--preset--font-family--heading)",
+          "fontWeight": "400",
+          "lineHeight": "1.2",
+          "letterSpacing": "-0.02em"
+        },
+        "color": {
+          "text": "var(--wp--preset--color--contrast)"
+        }
+      },
+      "h1": {
+        "typography": {
+          "fontSize": "var(--wp--preset--font-size--heading-1)",
+          "fontWeight": "400",
+          "lineHeight": "1.18",
+          "letterSpacing": "1.2em"
+        }
+      },
+      "h2": {
+        "typography": {
+          "fontSize": "var(--wp--preset--font-size--heading-2)",
+          "fontWeight": "500",
+          "lineHeight": "1.3",
+        }
+      },
+      "h3": {...},
+      "h4": {...},
+      "h5": {...},
+      "h6": {...}
+      }
     }
   }
 }
@@ -760,7 +820,7 @@ Apply to both `front-page.php` / `page-{slug}.php` (hand-written HTML) and block
 
 ## Image Handling
 
-ONLY add user-provided images / image URLs to the initial site build. Stock image URLs often fail to load in the block editor and break the design. Look at user-supplied images carefully and include them where they fit — don't force them in.
+ONLY add user-provided images / image URLs to the initial site build. Look at user-supplied images carefully and include them where they fit — don't force them in.
 
 ### Creating visual richness without images
 

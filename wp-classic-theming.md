@@ -1,6 +1,7 @@
 ---
 
 ## name: wordpress-classic-theming
+
 description: WordPress hybrid classic theme development with phased design-token, component-library, layout, and template generation. Use when generating or evolving theme.json, reusable PHP components, layouts, template parts, functions.php, and classic PHP templates for WordPress themes where PHP templates drive main site pages and Gutenberg manages blog/editorial content.
 
 # WordPress Classic Hybrid Theming
@@ -15,7 +16,7 @@ Read this skill first, then read and follow `theme-creation-flow.md` for executi
 - **No hard-coded font sizes**: Do not set literal font sizes in `style.css` or inline HTML. Use `--wp--preset--font-size--`* variables.
 - **No hard-coded spacing**: Do not use literal padding or margin values where a spacing token exists. Use `--wp--preset--spacing--`* variables.
 - **No mixed output**: PHP templates are plain HTML/PHP. Never insert `<!-- wp:* -->` comments into PHP templates. Do not generate a `patterns/` folder; block markup belongs only in saved editor content.
-- **Load fonts locally as WOFF2 only**: Download only `.woff2` files into `assets/fonts/`, declare each family with `fontFace` in `theme.json`, and never use `.ttf`, `.otf`, `fonts.googleapis.com`, or `fonts.gstatic.com`.
+- **Load Google fonts locally, not from CDN:**: Download only `.woff2` files into `assets/fonts/`, declare each family with `fontFace` in `theme.json`, and never use `.ttf`, `.otf`, `fonts.googleapis.com`, or `fonts.gstatic.com`.
 - **Page content lives in PHP templates, not in the database**: Static pages may exist in the database as routing anchors. The matching PHP template wins for the route and contains the page layout/copy.
 - **Validate components before templates**: Before generating templates, identify reusable UI patterns and implement them as shared components. Templates should reuse approved components whenever practical instead of duplicating markup.
 - **Never silently invent important states**: Missing states must be reported as inferred, omitted, or missing. Implement a state only when it is shown in the design, required for accessibility, or required by the component's actual behavior.
@@ -128,9 +129,9 @@ WordPress walks this hierarchy per request and uses the first file that exists:
 
 ## theme.json Configuration
 
-`theme.json` is the central design system for the hybrid theme.
+The central configuration for a hybrid theme. For more context check `./references/theme.json`. Generate `theme.json` entirely before CSS, components, layouts, or templates.
 
-Use schema/version:
+### Schema and Version
 
 ```json
 {
@@ -139,44 +140,112 @@ Use schema/version:
 }
 ```
 
-Settings should include:
+### Settings
 
-- `appearanceTools: true`
-- `layout.contentSize`
-- `layout.wideSize`
-- `color.palette` using hex, `rgb()`, or `rgba()` values from the design.
-- `color.gradients` when used by design
-- `typography.fontFamilies`
-- `typography.fontSizes`
-- `spacing.spacingSizes`
-- `custom` values only when WordPress presets do not cover the need, such as shadows, radii, or component-specific tokens.
+```json
+{
+  "settings": {
+    "appearanceTools": true,
+    "layout": { "contentSize": "800px", "wideSize": "1280px" },
+    "color": {
+      "palette": [ /* 5-9 colors using design-provided hex, rgb(), or rgba(): primary, secondary, accent, base, base-2, contrast */ ],
+      "defaultPalette": false,
+      "defaultGradients": false
+    },
+    "typography": {
+      "fontFamilies": [ /* heading + body font families */ ],
+      "fontSizes": [ /* small/body plus heading-6 through heading-1 tokens */ ]
+    },
+    "spacing": {
+      "units": ["px", "em", "rem", "%", "vw", "vh"],
+      "spacingSizes": [ /* 6 steps from compact to spacious */ ]
+    }
+  }
+}
+```
 
-Styles should include:
+### Styles
 
-- Body background and text color.
-- Body font family, font size, and line height.
-- Base `heading` styles plus isolated `h1` through `h6` element styles. Do not rely on global heading cascades for individual heading sizes.
-- Link color and state styling where supported.
-- Button defaults that align with reusable button components.
+```json
+{
+  "styles": {
+    "color": { /* background + text from palette */ },
+    "typography": { /* body font family, medium size, line-height 1.5-1.65 */ },
+    "elements": {
+      "heading": { /* shared heading defaults only */ },
+      "h1": { /* heading-1 size/weight/line-height */ },
+      "h2": { /* heading-2 size/weight/line-height */ },
+      "h3": { /* heading-3 size/weight/line-height */ },
+      "h4": { /* heading-4 size/weight/line-height */ },
+      "h5": { /* heading-5 size/weight/line-height */ },
+      "h6": { /* heading-6 size/weight/line-height */ },
+      "link": { /* accent color */ },
+      "button": { /* accent background, light text, border-radius */ }
+    }
+  }
+}
+```
+
+### Heading Elements
+
+Define a shared `heading` baseline, then isolate `h1` through `h6`. Do not rely on grouped heading cascades for individual heading sizes or weights.
+
+```json
+{
+  "styles": {
+    "elements": {
+      "heading": {
+        "typography": {
+          "fontFamily": "var(--wp--preset--font-family--heading)",
+          "fontWeight": "400",
+          "lineHeight": "1.2",
+          "letterSpacing": "-0.02em"
+        },
+        "color": {
+          "text": "var(--wp--preset--color--contrast)"
+        }
+      },
+      "h1": {
+        "typography": {
+          "fontSize": "var(--wp--preset--font-size--heading-1)",
+          "fontWeight": "400",
+          "lineHeight": "1.18",
+          "letterSpacing": "1.2em"
+        }
+      },
+      "h2": {
+        "typography": {
+          "fontSize": "var(--wp--preset--font-size--heading-2)",
+          "fontWeight": "500",
+          "lineHeight": "1.3",
+        }
+      },
+      "h3": {...},
+      "h4": {...},
+      "h5": {...},
+      "h6": {...}
+      }
+    }
+  }
+}
+```
 
 Hybrid caveats:
 
 - `theme.json` works in classic themes since WordPress 5.9.
 - WordPress emits `--wp--preset--*` CSS variables on the front end.
-- PHP templates can rely on color, font-size, font-family, spacing, content width, and wide width variables.
+- PHP templates can rely on color, font-size, font-family, spacing, content width, and wide width variables, such as:  `--wp--preset--color--{slug}`, `--wp--preset--font-size--{slug}`, `--wp--preset--font-family--{slug}`, `--wp--preset--spacing--{slug}`, `--wp--style--global--content-size`, `--wp--style--global--wide-size`
 - `appearanceTools` belongs in `theme.json`, not `functions.php`.
 - `functions.php` must call `add_theme_support( 'wp-block-styles' )` and `add_editor_style( 'style.css' )` so editor content matches the front end.
 
 ## Typography
 
-- Use the design file first. Map font families, weights, sizes, and line heights into `theme.json`.
+- When a design file is available, use the design file first. Map font families, weights, sizes, and line heights into `theme.json`.
 - Style `h1` through `h6` individually in `styles.elements`; keep `heading` only for shared defaults such as family/color.
-- When mobile and desktop sizes exist for the same token, combine them with `clamp()`.
+- When the design specifies separate mobile (min) and desktop (max) font sizes for the same token or element, combine them in `theme.json` with `clamp(min, preferred, max)` — mobile value as the minimum, desktop as the maximum. Convert px to rem (÷ 16). Example: h1 at 32px mobile / 56px desktop → `"size": "clamp(2rem, 4vw + 1rem, 3.5rem)"`
 - Convert px to rem by dividing by 16 unless the design system specifies otherwise.
 - Fallback body size is `1rem`.
-- Fallback heading scale should be modest. Cap display text around `3.5rem` unless the design explicitly requires more.
-- Body line height should usually be `1.5` to `1.65`.
-- Heading line height should usually be `1.1` to `1.3`.
+- **Line height**: Body text: 1.5–1.65. Headings: 1.1–1.3. Never below 1.0. Pull values from the design file when specified.
 
 ## Font Face Architecture
 
